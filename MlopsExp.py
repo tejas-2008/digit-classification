@@ -62,8 +62,16 @@ for ax, image, label in zip(axes, digits.images, digits.target):
 
 # 3. Data Preprocessing
 # flatten the images
-n_samples = len(digits.images)
-data = digits.images.reshape((n_samples, -1))
+data = preproecssing(digits.images)
+
+
+def preproecssing(data):
+    n_samples = len(digits.images)
+    data = digits.images.reshape((n_samples, -1))
+    return data
+
+
+
 
 # Create a classifier: a support vector classifier
 clf = svm.SVC(gamma=0.001)
