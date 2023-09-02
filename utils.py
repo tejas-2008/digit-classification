@@ -16,7 +16,9 @@ def preprocessing(data):
     return data
 
 def split_train_dev_test(x, y, test_size, random_state = 1):
-    return train_test_split(x, y, test_size=test_size, shuffle=False)
+    x_train, xtest, y_train, ytest = train_test_split(x, y, test_size=test_size, shuffle=False)
+    x_test, x_dev, y_test, y_dev = train_test_split(xtest, ytest, test_size=0.3, shuffle=False)
+    return x_train, x_test, x_dev, y_train, y_test, y_dev
 
 def train_model(x, y, model_prams, model_type = "svm"):
     if model_type == "svm":
