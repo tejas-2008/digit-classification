@@ -67,7 +67,7 @@ for ax, image, label in zip(axes, x, y):
 # 3. Data-Splitting
 # Split data into 50% train and 50% test subsets
 
-X_train, X_test, y_train, y_test = split_train_dev_test(x, y, test_size=0.3)
+X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(x, y, test_size=0.3)
 
 
 # 4. Data Preprocessing
