@@ -35,11 +35,6 @@ def predict_and_eval(model, x_test, y_test):
         ax.imshow(image, cmap=plt.cm.gray_r, interpolation="nearest")
         ax.set_title(f"Prediction: {prediction}")
 
-    ###############################################################################
-    # :func:`~sklearn.metrics.classification_report` builds a text report showing
-    # the main classification metrics.
-
-
     # 8. Evaluation
     print(
         f"Classification report for classifier {model}:\n"
