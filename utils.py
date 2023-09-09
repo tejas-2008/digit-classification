@@ -15,8 +15,10 @@ def preprocessing(data):
     data = data.reshape((n_samples, -1))
     return data
 
-def split_train_dev_test(x, y, test_size, random_state = 1):
-    return train_test_split(x, y, test_size=test_size, shuffle=False)
+def split_train_dev_test(x, y, test_size, dev_size, random_state = 1):
+    x_train, xtest, y_train, ytest = train_test_split(x, y, test_size=test_size, shuffle=False)
+    x_test, x_dev, y_test, y_dev = train_test_split(xtest, ytest, test_size=dev_size/test_size, shuffle=False)
+    return x_train, x_test, x_dev, y_train, y_test, y_dev
 
 def train_model(x, y, model_prams, model_type = "svm"):
     if model_type == "svm":
@@ -24,6 +26,7 @@ def train_model(x, y, model_prams, model_type = "svm"):
     model = clf(**model_prams)
     model.fit(x, y)
     return model
+
 
 def predict_and_eval(model, x_test, y_test):
     predicted = model.predict(x_test)
@@ -74,4 +77,46 @@ def predict_and_eval(model, x_test, y_test):
         "Classification report rebuilt from confusion matrix:\n"
         f"{metrics.classification_report(y_true, y_pred)}\n"
     )
+    return 
 
+
+
+
+
+def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations):
+    """
+    Parameters:
+    - X_train: Training data features
+    - Y_train: Training data labels
+    - X_dev: Development (validation) data features
+    - y_dev: Development (validation) data labels
+    - list_of_all_param_combinations: List of dictionaries, each containing hyperparameter combinations to try
+    - model: The machine learning model (e.g., RandomForestClassifier, SVM, etc.)
+
+    Returns:
+    - best_hparams: Best hyperparameters found
+    - best_model: Model with the best hyperparameters
+    - best_accuracy: Best accuracy achieved on the development data
+    """
+    best_accuracy = 0
+    best_hparams = None
+    best_model = None
+
+    for param_combination in list_of_all_param_combinations:
+        # # Set hyperparameters for the model
+        # model.set_params(**param_combination)
+
+        # # Fit the model to the training data
+        # model.fit(X_train, Y_train)
+
+        model = train_model(X_train, Y_train, param_combination)
+        # Evaluate the model on the development data
+        accuracy = sum(y_dev == model.predict(X_dev)) / len(y_dev)
+
+        # Check if this set of hyperparameters gives a better accuracy
+        if accuracy > best_accuracy:
+            best_accuracy = accuracy
+            best_hparams = param_combination
+            best_model = model
+
+    return best_hparams, best_model, best_accuracy
