@@ -17,7 +17,13 @@ hand-written digits, from 0-9.
 import matplotlib.pyplot as plt
 from sklearn import datasets, metrics
 import pdb
-from utils import preprocessing, split_train_dev_test, train_model, read_digits, predict_and_eval
+import itertools
+from utils import *
+gamma_ranges = [0.001, 0.01, 0.1, 1, 10, 100]
+C_ranges = [0.1, 1, 2, 5, 10]
+list_of_all_param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_ranges, C_ranges)]
+test_size_array = [0.1, 0.2, 0.3]
+dev_size_array = [0.1, 0.2, 0.3]
 ##############################################################################
 # #
 # Digits dataset
@@ -65,20 +71,23 @@ for ax, image, label in zip(axes, x, y):
 # Create a classifier: a support vector classifier
 
 # 3. Data-Splitting
-# Split data into 50% train and 50% test subsets
+# Split data into test, train and dev data
+def run_exp():
+    for test_size in test_size_array:
+        for dev_size in dev_size_array:
+            X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(x, y, test_size=0.3, dev_size = 0.1)
+            # 4. Data Preprocessing
+            # flatten the images
+            X_train = preprocessing(X_train)
+            X_test = preprocessing(X_test)
+            X_dev = preprocessing(X_dev)
+            # HYPER PARAMETER TUNNING
+            best_hparams, best_model, dev_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, list_of_all_param_combinations)
+            train_acc = sum(y_train == best_model.predict(X_train)) / len(y_train)
+            test_acc = sum(y_test == best_model.predict(X_test)) / len(y_test)
+            print("test size = ", test_size, "dev size = ", dev_size, "train size = ", 1 - (test_size+dev_size), "train_acc = ", train_acc, 
+                    "test_acc = ", test_acc, "dev_acc = ", dev_accuracy)
+    
+run_exp()
 
-X_train, X_test, y_train, y_test = split_train_dev_test(x, y, test_size=0.3)
 
-
-# 4. Data Preprocessing
-# flatten the images
-X_train = preprocessing(X_train)
-X_test = preprocessing(X_test)
-
-
-# 5. Model Training
-# Learn the digits on the train subset
-clf = train_model(X_train, y_train, {'gamma': 0.001})
-
-# 6. Predict the value of the digit on the test subset
-predict_and_eval(clf, X_test, y_test)
