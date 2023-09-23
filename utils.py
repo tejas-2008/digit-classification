@@ -4,12 +4,19 @@ from sklearn import datasets, svm, metrics
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
+def get_info(data):
+    sample_image = data[0]
+    print("Total Number of Samples in the dataset are : ", len(data))
+    print("Size of Image is : ", len(sample_image), "X", len(sample_image[0]))
 
 def read_digits():
     digits = datasets.load_digits()
     x = digits.images 
     y = digits.target
+    get_info(x)
     return x, y
+
+
 def preprocessing(data):
     n_samples = len(data)
     data = data.reshape((n_samples, -1))
