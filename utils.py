@@ -3,6 +3,7 @@
 from sklearn import datasets, svm, metrics
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from skimage.transform import resize
 
 def get_info(data):
     sample_image = data[0]
@@ -17,9 +18,11 @@ def read_digits():
     return x, y
 
 
-def preprocessing(data):
+def preprocessing(data, shape):
     n_samples = len(data)
     data = data.reshape((n_samples, -1))
+    for d in data:
+        d = resize(d, shape)
     return data
 
 def split_train_dev_test(x, y, test_size, dev_size, random_state = 1):

@@ -24,6 +24,8 @@ C_ranges = [0.1, 1, 2, 5, 10]
 list_of_all_param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_ranges, C_ranges)]
 test_size_array = [0.1, 0.2, 0.3]
 dev_size_array = [0.1, 0.2, 0.3]
+
+shape_arr = (8, 6, 4)
 ##############################################################################
 # #
 # Digits dataset
@@ -73,20 +75,23 @@ for ax, image, label in zip(axes, x, y):
 # 3. Data-Splitting
 # Split data into test, train and dev data
 def run_exp():
-    for test_size in test_size_array:
-        for dev_size in dev_size_array:
-            X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(x, y, test_size=0.3, dev_size = 0.1)
-            # 4. Data Preprocessing
-            # flatten the images
-            X_train = preprocessing(X_train)
-            X_test = preprocessing(X_test)
-            X_dev = preprocessing(X_dev)
-            # HYPER PARAMETER TUNNING
-            best_hparams, best_model, dev_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, list_of_all_param_combinations)
-            train_acc = sum(y_train == best_model.predict(X_train)) / len(y_train)
-            test_acc = sum(y_test == best_model.predict(X_test)) / len(y_test)
-            print("test size = ", test_size, "dev size = ", dev_size, "train size = ", 1 - (test_size+dev_size), "train_acc = ", train_acc, 
-                    "test_acc = ", test_acc, "dev_acc = ", dev_accuracy)
+    test_size = 0.2
+    dev_size = 0.1
+    train_size = 0.7
+    for shape in shape_arr:
+        
+        X_train, X_test, X_dev, y_train, y_test, y_dev = split_train_dev_test(x, y, test_size=0.2, dev_size = 0.1)
+        # 4. Data Preprocessing
+        # flatten the images
+        x_train = preprocessing(X_train, (shape, shape))
+        x_test = preprocessing(X_test, (shape, shape))
+        x_dev = preprocessing(X_dev, (shape, shape))
+        # HYPER PARAMETER TUNNING
+        best_hparams, best_model, dev_accuracy = tune_hparams(x_train, y_train, x_dev, y_dev, list_of_all_param_combinations)
+        train_acc = sum(y_train == best_model.predict(x_train)) / len(y_train)
+        test_acc = sum(y_test == best_model.predict(x_test)) / len(y_test)
+        print("Image_size = " ,shape ,"X" ,shape, "test size = ", test_size, "dev size = ", dev_size, "train size = ", 1 - (test_size+dev_size), "train_acc = ", train_acc, 
+                "test_acc = ", test_acc, "dev_acc = ", dev_accuracy)
     
 run_exp()
 
