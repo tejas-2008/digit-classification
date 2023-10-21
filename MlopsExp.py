@@ -19,11 +19,25 @@ from sklearn import datasets, metrics
 import pdb
 import itertools
 from utils import *
+
+classifier_param_dict = {}
+
+# SVM
 gamma_ranges = [0.001, 0.01, 0.1, 1, 10, 100]
 C_ranges = [0.1, 1, 2, 5, 10]
-list_of_all_param_combinations = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_ranges, C_ranges)]
-test_size_array = [0.1, 0.2, 0.3]
-dev_size_array = [0.1, 0.2, 0.3]
+h_param_svm = {'gamma': gamma_ranges, 'C': C_ranges}
+h_param_svm_comb = [{'gamma': gamma, 'C': C} for gamma, C in itertools.product(gamma_ranges, C_ranges)]
+test_size_array = [0.2]
+dev_size_array = [0.2]
+classifier_param_dict["svm"] = h_param_svm_comb
+
+# Decision Tree
+max_depth_list = [5, 10, 15, 20, 50, 100]
+h_param_tree = {}
+h_param_tree['max_depth'] = max_depth_list
+h_param_tree_comb = [{'max_depth': max_depth} for max_depth in max_depth_list]
+
+classifier_param_dict["DecisionTree"] = h_param_tree_comb
 ##############################################################################
 # #
 # Digits dataset
@@ -82,12 +96,30 @@ def run_exp():
             X_test = preprocessing(X_test)
             X_dev = preprocessing(X_dev)
             # HYPER PARAMETER TUNNING
-            best_hparams, best_model, dev_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, list_of_all_param_combinations)
-            train_acc = sum(y_train == best_model.predict(X_train)) / len(y_train)
-            test_acc = sum(y_test == best_model.predict(X_test)) / len(y_test)
-            print("test size = ", test_size, "dev size = ", dev_size, "train size = ", 1 - (test_size+dev_size), "train_acc = ", train_acc, 
-                    "test_acc = ", test_acc, "dev_acc = ", dev_accuracy)
+            
+            for model_type in classifier_param_dict:
+                h_param = classifier_param_dict[model_type]
+                best_hparams, best_model_path, dev_accuracy = tune_hparams(X_train, y_train, X_dev, y_dev, h_param, model_type)
+                # Loading best model
+                best_model = load(best_model_path)
+
+                train_acc = sum(y_train == best_model.predict(X_train)) / len(y_train)
+                test_acc = sum(y_test == best_model.predict(X_test)) / len(y_test)
+                # predict_and_eval(best_model, X_test, y_test)
+                print("Test Results for model type = ", model_type)
+                print("test size = ", test_size, "dev size = ", dev_size, "train size = ", 1 - (test_size+dev_size), "train_acc = ", train_acc, 
+                        "test_acc = ", test_acc, "dev_acc = ", dev_accuracy)
+                run_results = {"model name" : model_type, "test size" : test_size, "dev size" : dev_size, "train size" : 1 - (test_size+dev_size), "train_acc" : train_acc, 
+                        "test_acc" : test_acc, "dev_acc" : dev_accuracy}
     
+    svm_model = load("models/svm.joblib")
+    tree_model = load("models/DecisionTree.joblib")
+    svm_pred = svm_model.predict(X_test)
+    tree_pred = tree_model.predict(X_test)
+    confusion_matrix = metrics.confusion_matrix(svm_pred, tree_pred)
+    print("confusion matrix = \n", confusion_matrix)
+    cnf2 = [[sum(svm_pred == y_test), sum(svm_pred != y_test)], [sum(tree_pred == y_test), sum(tree_pred != y_test)]]
+    print("confusion matrix 2 = ", cnf2)            
 run_exp()
 
 

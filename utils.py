@@ -1,8 +1,10 @@
 
 # Import datasets, classifiers and performance metrics
-from sklearn import datasets, svm, metrics
+from sklearn import datasets, svm, metrics, tree
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
+from joblib import dump, load
+
 
 def get_info(data):
     sample_image = data[0]
@@ -27,9 +29,11 @@ def split_train_dev_test(x, y, test_size, dev_size, random_state = 1):
     x_test, x_dev, y_test, y_dev = train_test_split(xtest, ytest, test_size=dev_size/test_size, shuffle=False)
     return x_train, x_test, x_dev, y_train, y_test, y_dev
 
-def train_model(x, y, model_prams, model_type = "svm"):
+def train_model(x, y, model_prams, model_type):
     if model_type == "svm":
         clf = svm.SVC
+    if model_type == "DecisionTree":
+        clf = tree.DecisionTreeClassifier
     model = clf(**model_prams)
     model.fit(x, y)
     return model
@@ -51,21 +55,12 @@ def predict_and_eval(model, x_test, y_test):
         f"{metrics.classification_report(y_test, predicted)}\n"
     )
 
-    ###############################################################################
-    # We can also plot a :ref:`confusion matrix <confusion_matrix>` of the
-    # true digit values and the predicted digit values.
 
     disp = metrics.ConfusionMatrixDisplay.from_predictions(y_test, predicted)
     disp.figure_.suptitle("Confusion Matrix")
     print(f"Confusion matrix:\n{disp.confusion_matrix}")
 
-    plt.show()
-
-    ###############################################################################
-    # If the results from evaluating a classifier are stored in the form of a
-    # :ref:`confusion matrix <confusion_matrix>` and not in terms of `y_true` and
-    # `y_pred`, one can still build a :func:`~sklearn.metrics.classification_report`
-    # as follows:
+    # plt.show()    
 
 
     # The ground truth and predicted lists
@@ -73,8 +68,6 @@ def predict_and_eval(model, x_test, y_test):
     y_pred = []
     cm = disp.confusion_matrix
 
-    # For each cell in the confusion matrix, add the corresponding ground truths
-    # and predictions to the lists
     for gt in range(len(cm)):
         for pred in range(len(cm)):
             y_true += [gt] * cm[gt][pred]
@@ -90,7 +83,7 @@ def predict_and_eval(model, x_test, y_test):
 
 
 
-def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations):
+def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations, model_type):
     """
     Parameters:
     - X_train: Training data features
@@ -115,8 +108,7 @@ def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations)
 
         # # Fit the model to the training data
         # model.fit(X_train, Y_train)
-
-        model = train_model(X_train, Y_train, param_combination)
+        model = train_model(X_train, Y_train, param_combination, model_type)
         # Evaluate the model on the development data
         accuracy = sum(y_dev == model.predict(X_dev)) / len(y_dev)
 
@@ -124,6 +116,11 @@ def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations)
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_hparams = param_combination
+            best_model_path = "./models/{}".format(model_type) +".joblib"
             best_model = model
+            # save the best_model    
+    dump(best_model, best_model_path) 
 
-    return best_hparams, best_model, best_accuracy
+    print("Model save at {}".format(best_model_path))
+
+    return best_hparams, best_model_path, best_accuracy
