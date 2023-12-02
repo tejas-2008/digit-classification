@@ -116,10 +116,10 @@ def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations,
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_hparams = param_combination
-            best_model_path = "./models/{}".format(model_type) +".joblib"
-            best_model = model
-            # save the best_model    
-    dump(best_model, best_model_path) 
+        best_model_path = "./models/{}_".format(model_type) +"_".join(["{}:{}".format(k,v) for k,v in param_combination.items()]) + ".joblib"
+        best_model = model
+        # save the best_model    
+        dump(best_model, best_model_path)     
 
     print("Model save at {}".format(best_model_path))
 

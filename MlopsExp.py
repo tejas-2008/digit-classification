@@ -112,14 +112,14 @@ def run_exp():
                 run_results = {"model name" : model_type, "test size" : test_size, "dev size" : dev_size, "train size" : 1 - (test_size+dev_size), "train_acc" : train_acc, 
                         "test_acc" : test_acc, "dev_acc" : dev_accuracy}
     
-    svm_model = load("models/svm.joblib")
-    tree_model = load("models/DecisionTree.joblib")
-    svm_pred = svm_model.predict(X_test)
-    tree_pred = tree_model.predict(X_test)
-    confusion_matrix = metrics.confusion_matrix(svm_pred, tree_pred)
-    print("confusion matrix = \n", confusion_matrix)
-    cnf2 = [[sum(svm_pred == y_test), sum(svm_pred != y_test)], [sum(tree_pred == y_test), sum(tree_pred != y_test)]]
-    print("confusion matrix 2 = ", cnf2)            
+    # svm_model = load("models/svm.joblib")
+    # tree_model = load("models/DecisionTree.joblib")
+    # svm_pred = svm_model.predict(X_test)
+    # tree_pred = tree_model.predict(X_test)
+    # confusion_matrix = metrics.confusion_matrix(svm_pred, tree_pred)
+    # print("confusion matrix = \n", confusion_matrix)
+    # cnf2 = [[sum(svm_pred == y_test), sum(svm_pred != y_test)], [sum(tree_pred == y_test), sum(tree_pred != y_test)]]
+    # print("confusion matrix 2 = ", cnf2)            
 run_exp()
 
 
