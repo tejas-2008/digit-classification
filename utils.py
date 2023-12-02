@@ -1,9 +1,10 @@
 
 # Import datasets, classifiers and performance metrics
-from sklearn import datasets, svm, metrics, tree
+from sklearn import datasets, svm, metrics, tree, linear_model
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from joblib import dump, load
+from sklearn.preprocessing import Normalizer
 
 
 def get_info(data):
@@ -19,9 +20,12 @@ def read_digits():
     return x, y
 
 
+
 def preprocessing(data):
     n_samples = len(data)
     data = data.reshape((n_samples, -1))
+    scaler = Normalizer()
+    data = scaler.transform(data)
     return data
 
 def split_train_dev_test(x, y, test_size, dev_size, random_state = 1):
@@ -29,12 +33,18 @@ def split_train_dev_test(x, y, test_size, dev_size, random_state = 1):
     x_test, x_dev, y_test, y_dev = train_test_split(xtest, ytest, test_size=dev_size/test_size, shuffle=False)
     return x_train, x_test, x_dev, y_train, y_test, y_dev
 
-def train_model(x, y, model_prams, model_type):
+def train_model(x, y, model_params, model_type):
     if model_type == "svm":
+        print(model_params)
         clf = svm.SVC
+        model = clf(**model_params)
     if model_type == "DecisionTree":
         clf = tree.DecisionTreeClassifier
-    model = clf(**model_prams)
+        model = clf(**model_params)
+    if model_type == "logisticRegression":
+        print(model_params)
+        clf = linear_model.LogisticRegression(solver = model_params["solver"])
+        model = clf
     model.fit(x, y)
     return model
 
@@ -80,9 +90,6 @@ def predict_and_eval(model, x_test, y_test):
     return 
 
 
-
-
-
 def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations, model_type):
     """
     Parameters:
@@ -116,9 +123,12 @@ def tune_hparams(X_train, Y_train, X_dev, y_dev, list_of_all_param_combinations,
         if accuracy > best_accuracy:
             best_accuracy = accuracy
             best_hparams = param_combination
-        best_model_path = "./models/{}_".format(model_type) +"_".join(["{}:{}".format(k,v) for k,v in param_combination.items()]) + ".joblib"
+        best_model_path = "./models/B20ME036_lr_"+"_".join(["{}:{}".format(k,v) for k,v in param_combination.items()]) + ".joblib"
+        
         best_model = model
-        # save the best_model    
+        # save the best_model   
+        # 
+         
         dump(best_model, best_model_path)     
 
     print("Model save at {}".format(best_model_path))
